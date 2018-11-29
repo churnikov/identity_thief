@@ -1,0 +1,9 @@
+{
+  "tinder_scraper":{
+    "save_path":"save_path"
+  },
+  "tinder_bot":{
+    "token":"token",
+    "bot_name":"name_bot"
+  }
+}

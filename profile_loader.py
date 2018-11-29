@@ -74,7 +74,8 @@ class TinderScraper:
 
 
 if __name__ == '__main__':
-    save_path = '/Volumes/Storage2TB/' + 'tinder_data'
+    with open('config.json', 'r') as f:
+        save_path = json.load(f)['tinder_scraper']['save_path']
     tin_scraper = TinderScraper(fb_username, fb_password, save_path=save_path)
     tin_scraper.init()
     while True:

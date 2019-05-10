@@ -57,8 +57,10 @@ def start(bot, update: Update):
     text, images = prepare_profile(profile)
 
     if user.username == USERNAME:
-        update.message.reply_media_group(images)
-        update.message.reply_text(f"{text}\nPlease choose:", reply_markup=reply_markup)
+        update.message.reply_media_group(images, disable_notification=True)
+        update.message.reply_text(
+            f"{text}\nPlease choose:", reply_markup=reply_markup, disable_notification=True
+        )
     else:
         update.message.reply_text(f"You should not be here, {user.username}")
 
@@ -76,9 +78,12 @@ def button(bot, update):
     current_profile = profile
     text, images = prepare_profile(profile)
 
-    bot.send_media_group(media=images, chat_id=query.message.chat_id)
+    bot.send_media_group(media=images, chat_id=query.message.chat_id, disable_notification=True)
     bot.send_message(
-        text=f"{text}\nPlease choose:", reply_markup=reply_markup, chat_id=query.message.chat_id
+        text=f"{text}\nPlease choose:",
+        reply_markup=reply_markup,
+        chat_id=query.message.chat_id,
+        disable_notification=True,
     )
 
 

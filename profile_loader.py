@@ -68,6 +68,7 @@ class TinderSaver:
         n_new_profiles = 0
         n_new_photos = 0
         self.logger.info(f"Got {len(recommendations['results'])} recommendations")
+        profiles = []
         for res in filter(
             lambda r: self.collection.find_one(filter={"_id": r["_id"]}) is None,
             recommendations["results"],
@@ -90,8 +91,9 @@ class TinderSaver:
                     {"img": img, "filename": p["fileName"], "extension": p["extension"], "url": url}
                 )
                 n_new_photos += 1
-
+            profiles.append(profile)
         self.logger.info(f"Got {n_new_profiles} new profiles and {n_new_photos} new photos.")
+        self.collection.insert_many(profiles)
 
 
 class Loader(Injector):
@@ -99,9 +101,10 @@ class Loader(Injector):
     def load(saver, connector):
         connector.connect()
         saver.save_profiles()
+
     saver = TinderSaver
-    collection_name = 'profiles'
-    db = get_database(host = None, port = None, db_name = 'tinder')
+    collection_name = "profiles"
+    db = get_database(host=None, port=None, db_name="tinder")
     connector = TinderConnector
     fb_login = fb_username
     fb_password = fb_password

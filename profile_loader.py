@@ -97,7 +97,7 @@ class TinderSaver:
         self.collection.insert_many(profiles)
 
 
-class Loader(Injector):
+class TinderContainer(Injector):
     @operation
     def load(saver, connector):
         connector.connect()
@@ -113,4 +113,4 @@ class Loader(Injector):
 
 
 if __name__ == "__main__":
-    Loader.load()
+    TinderContainer.load()

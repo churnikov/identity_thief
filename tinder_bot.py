@@ -1,10 +1,16 @@
 import json
 import logging
+from typing import Tuple, List
 
 import telegram
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, User
-from telegram import InputMediaPhoto
+import tinder_api
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, User, InputMediaPhoto
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+
+from profile_loader import TinderContainer
+from profile_recommender import Recommender, Marker
+
+TinderContainer.connector.connect()
 
 with open("config.json", "r") as f:
     conf = json.load(f)["tinder_bot"]
@@ -28,24 +34,51 @@ keyboard = [
 reply_markup = InlineKeyboardMarkup(keyboard)
 
 
+current_profile = None
+
+
+def prepare_profile(profile) -> Tuple[str, List[InputMediaPhoto]]:
+    bio = profile["bio"]
+    name = profile["name"]
+    text = f"Name: {name}, About: {bio}"
+
+    images = [InputMediaPhoto(photo["url"]) for photo in profile["photos"]]
+
+    return text, images
+
+
 def start(bot, update: Update):
 
     user: User = update.effective_user
 
+    profile = Recommender.recommend()
+    global current_profile
+    current_profile = profile
+    text, images = prepare_profile(profile)
+
     if user.username == USERNAME:
-        update.message.reply_media_group([InputMediaPhoto("")])
-        update.message.reply_text("Please choose:", reply_markup=reply_markup)
+        update.message.reply_media_group(images)
+        update.message.reply_text(f"{text}\nPlease choose:", reply_markup=reply_markup)
     else:
         update.message.reply_text(f"You should not be here, {user.username}")
 
 
 def button(bot, update):
     query = update.callback_query
-    # query.data
+    global current_profile
+    if query.data == "like":
+        tinder_api.like(current_profile["_id"])
+    else:
+        tinder_api.dislike(current_profile["_id"])
+    Marker.mark(current_profile, query.data == "like")
 
-    bot.send_media_group(media=[InputMediaPhoto()], chat_id=query.message.chat_id)
+    profile = Recommender.recommend()
+    current_profile = profile
+    text, images = prepare_profile(profile)
+
+    bot.send_media_group(media=images, chat_id=query.message.chat_id)
     bot.send_message(
-        text="Please choose:", reply_markup=reply_markup, chat_id=query.message.chat_id
+        text=f"{text}\nPlease choose:", reply_markup=reply_markup, chat_id=query.message.chat_id
     )
 
 

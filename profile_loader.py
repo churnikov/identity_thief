@@ -74,6 +74,7 @@ class TinderSaver:
             recommendations["results"],
         ):
             profile = {
+                "evaluated": False,
                 "distance_mi": res["distance_mi"],
                 "_id": res["_id"],
                 "bio": res["bio"],
